@@ -3,11 +3,15 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Localization;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Razor;
+using System.IO;
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 
 namespace RazorWebSite
 {
@@ -15,21 +19,31 @@ namespace RazorWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            var updateableFileProvider = new UpdateableFileProvider();
+            services.AddSingleton(updateableFileProvider);
+            services.AddSingleton<ITagHelperComponent, TestHeadTagHelperComponent>();
+            services.AddSingleton<ITagHelperComponent, TestBodyTagHelperComponent>();
+
             services
                 .AddMvc()
                 .AddRazorOptions(options =>
                 {
-                    options.ViewLocationExpanders.Add(new CustomPartialDirectoryViewLocationExpander());
+                    options.FileProviders.Add(new EmbeddedFileProvider(
+                        typeof(Startup).GetTypeInfo().Assembly,
+                        $"{nameof(RazorWebSite)}.EmbeddedResources"));
+                    options.FileProviders.Add(updateableFileProvider);
+                    options.ViewLocationExpanders.Add(new NonMainPageViewLocationExpander());
+                    options.ViewLocationExpanders.Add(new BackSlashExpander());
                 })
                 .AddViewOptions(options =>
                 {
                     options.HtmlHelperOptions.ClientValidationEnabled = false;
-                    options.HtmlHelperOptions.Html5DateRenderingMode = Microsoft.AspNet.Mvc.Rendering.Html5DateRenderingMode.Rfc3339;
+                    options.HtmlHelperOptions.Html5DateRenderingMode = Microsoft.AspNetCore.Mvc.Rendering.Html5DateRenderingMode.Rfc3339;
                     options.HtmlHelperOptions.IdAttributeDotReplacement = "!";
                     options.HtmlHelperOptions.ValidationMessageElement = "validationMessageElement";
                     options.HtmlHelperOptions.ValidationSummaryMessageElement = "validationSummaryElement";
                 })
-                .AddViewLocalization(LanguageViewLocationExpanderFormat.SubFolder);
+                .AddMvcLocalization(LanguageViewLocationExpanderFormat.SubFolder);
 
             services.AddTransient<InjectedHelper>();
             services.AddTransient<TaskReturningService>();
@@ -38,24 +52,41 @@ namespace RazorWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            var options = new RequestLocalizationOptions
+            app.UseDeveloperExceptionPage();
+            app.UseRequestLocalization(new RequestLocalizationOptions
             {
+                DefaultRequestCulture = new RequestCulture("en-GB", "en-US"),
                 SupportedCultures = new List<CultureInfo>
                 {
                     new CultureInfo("fr"),
                     new CultureInfo("en-GB"),
-                    new CultureInfo("en-US")
+                    new CultureInfo("en-US"),
                 },
                 SupportedUICultures = new List<CultureInfo>
                 {
                     new CultureInfo("fr"),
                     new CultureInfo("en-GB"),
-                    new CultureInfo("en-US")
+                    new CultureInfo("en-US"),
                 }
-            };
-            app.UseRequestLocalization(options, new RequestCulture("en-GB", "en-US"));
+            });
 
             app.UseMvcWithDefaultRoute();
         }
+
+        public static void Main(string[] args)
+        {
+            var host = CreateWebHostBuilder(args)
+                .Build();
+
+            host.Run();
+        }
+
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            new WebHostBuilder()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStartup<Startup>()
+                .UseKestrel()
+                .UseIISIntegration();
     }
 }
+

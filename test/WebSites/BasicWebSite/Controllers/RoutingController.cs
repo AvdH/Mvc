@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace BasicWebSite
 {
@@ -29,14 +30,14 @@ namespace BasicWebSite
         {
             if (!context.RouteData.DataTokens.ContainsKey("actionName"))
             {
-                context.RouteData.DataTokens.Add("actionName", context.ActionDescriptor.Name);
+                context.RouteData.DataTokens.Add("actionName", ((ControllerActionDescriptor)context.ActionDescriptor).ActionName);
             }
         }
 
         private object GetData()
         {
-            var routers = ActionContext.RouteData.Routers.Select(r => r.GetType().FullName).ToArray();
-            var dataTokens = ActionContext.RouteData.DataTokens;
+            var routers = RouteData.Routers.Select(r => r.GetType().FullName).ToArray();
+            var dataTokens = RouteData.DataTokens;
 
             return new
             {

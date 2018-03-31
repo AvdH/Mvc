@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FormatterWebSite
 {
@@ -19,7 +19,7 @@ namespace FormatterWebSite
                     ModelState["Designation"].Errors[0].ErrorMessage);
             }
 
-            return Content("User has been registerd : " + user.Name);
+            return Content("User has been registered : " + user.Name);
         }
 
         [HttpPost]

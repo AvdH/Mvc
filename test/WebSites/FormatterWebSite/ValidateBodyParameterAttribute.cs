@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace FormatterWebSite
 {
@@ -27,7 +28,7 @@ namespace FormatterWebSite
                     {
                         var errorInfo = new ErrorInfo
                         {
-                            ActionName = context.ActionDescriptor.Name,
+                            ActionName = ((ControllerActionDescriptor)context.ActionDescriptor).ActionName,
                             ParameterName = bodyParameter.Name,
                             Errors = parameterBindingErrors.Select(x => x.ErrorMessage).ToList(),
                             Source = "filter"

@@ -1,8 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 namespace RazorWebSite.Controllers
 {
@@ -23,6 +23,7 @@ namespace RazorWebSite.Controllers
                 offset: TimeSpan.FromHours(0))
             };
 
+            ModelState.AddModelError(string.Empty, "A model error occurred.");
             ModelState.AddModelError("Error", "An error occurred.");
             return View(model);
         }
@@ -42,6 +43,7 @@ namespace RazorWebSite.Controllers
                 offset: TimeSpan.FromHours(0))
             };
 
+            ModelState.AddModelError(string.Empty, "A model error occurred.");
             ModelState.AddModelError("Error", "An error occurred.");
             return View(model);
         }

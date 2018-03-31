@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ApiExplorer;
-using Microsoft.AspNet.Mvc.Filters;
+using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace ApiExplorerWebSite
 {
@@ -26,6 +28,12 @@ namespace ApiExplorerWebSite
 
         public void OnResourceExecuting(ResourceExecutingContext context)
         {
+            var controllerActionDescriptor = context.ActionDescriptor as ControllerActionDescriptor;
+            if (controllerActionDescriptor != null && controllerActionDescriptor.MethodInfo.IsDefined(typeof(PassThruAttribute)))
+            {
+                return;
+            }
+
             var descriptions = new List<ApiExplorerData>();
             foreach (var group in _descriptionProvider.ApiDescriptionGroups.Items)
             {
@@ -43,7 +51,6 @@ namespace ApiExplorerWebSite
 
         public void OnResourceExecuted(ResourceExecutedContext context)
         {
-            throw new NotImplementedException();
         }
 
         private ApiExplorerData CreateSerializableData(ApiDescription description)
@@ -52,8 +59,7 @@ namespace ApiExplorerWebSite
             {
                 GroupName = description.GroupName,
                 HttpMethod = description.HttpMethod,
-                RelativePath = description.RelativePath,
-                ResponseType = description.ResponseType?.FullName,
+                RelativePath = description.RelativePath
             };
 
             foreach (var parameter in description.ParameterDescriptions)
@@ -78,15 +84,34 @@ namespace ApiExplorerWebSite
                 data.ParameterDescriptions.Add(parameterData);
             }
 
-            foreach (var response in description.SupportedResponseFormats)
+            foreach (var request in description.SupportedRequestFormats)
             {
-                var responseData = new ApiExplorerResponseData()
+                data.SupportedRequestFormats.Add(new ApiExplorerRequestFormat
                 {
-                    FormatterType = response.Formatter.GetType().FullName,
-                    MediaType = response.MediaType.ToString(),
+                    FormatterType = request.Formatter?.GetType().FullName,
+                    MediaType = request.MediaType,
+                });
+            }
+
+            foreach (var response in description.SupportedResponseTypes)
+            {
+                var responseType = new ApiExplorerResponseType()
+                {
+                    StatusCode = response.StatusCode,
+                    ResponseType = response.Type?.FullName,
+                    IsDefaultResponse = response.IsDefaultResponse,
                 };
 
-                data.SupportedResponseFormats.Add(responseData);
+                foreach(var responseFormat in response.ApiResponseFormats)
+                {
+                    responseType.ResponseFormats.Add(new ApiExplorerResponseFormat()
+                    {
+                        FormatterType = responseFormat.Formatter?.GetType().FullName,
+                        MediaType = responseFormat.MediaType
+                    });
+                }
+
+                data.SupportedResponseTypes.Add(responseType);
             }
 
             return data;
@@ -103,9 +128,9 @@ namespace ApiExplorerWebSite
 
             public string RelativePath { get; set; }
 
-            public string ResponseType { get; set; }
+            public List<ApiExplorerResponseType> SupportedResponseTypes { get; } = new List<ApiExplorerResponseType>();
 
-            public List<ApiExplorerResponseData> SupportedResponseFormats { get; } = new List<ApiExplorerResponseData>();
+            public List<ApiExplorerRequestFormat> SupportedRequestFormats { get; } = new List<ApiExplorerRequestFormat>();
         }
 
         // Used to serialize data between client and server
@@ -131,7 +156,26 @@ namespace ApiExplorerWebSite
         }
 
         // Used to serialize data between client and server
-        private class ApiExplorerResponseData
+        private class ApiExplorerResponseType
+        {
+            public IList<ApiExplorerResponseFormat> ResponseFormats { get; }
+                = new List<ApiExplorerResponseFormat>();
+
+            public string ResponseType { get; set; }
+
+            public int StatusCode { get; set; }
+
+            public bool IsDefaultResponse { get; set; }
+        }
+
+        private class ApiExplorerResponseFormat
+        {
+            public string MediaType { get; set; }
+
+            public string FormatterType { get; set; }
+        }
+
+        private class ApiExplorerRequestFormat
         {
             public string MediaType { get; set; }
 

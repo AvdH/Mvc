@@ -1,11 +1,8 @@
-﻿@inject FrameworkSpecificHelper MyHelper
+@inject FrameworkSpecificHelper MyHelper
 @{
     string value =
-#if DNX451_CUSTOM_DEFINE
-    MyHelper.ExecuteDnx451Operation();
-#endif
-#if DNXCORE50_CUSTOM_DEFINE
-    MyHelper.ExecuteDnxCore50Operation();
+#if NETCOREAPP2_0_CUSTOM_DEFINE || NETCOREAPP2_1_CUSTOM_DEFINE
+    MyHelper.ExecuteNetCoreApp2_0Operation();
 #endif
 }
 @value

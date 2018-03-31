@@ -1,9 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Formatters;
+using System.IO;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
@@ -28,7 +30,7 @@ namespace XmlFormattersWebSite
                 // request information (Ex: Accept header).
                 // So here we instead clear out the default supported media types and create new
                 // ones which are distinguishable between formatters.
-                var xmlSerializerInputFormatter = new XmlSerializerInputFormatter();
+                var xmlSerializerInputFormatter = new XmlSerializerInputFormatter(new MvcOptions());
                 xmlSerializerInputFormatter.SupportedMediaTypes.Clear();
                 xmlSerializerInputFormatter.SupportedMediaTypes.Add(
                     new MediaTypeHeaderValue("application/xml-xmlser"));
@@ -42,7 +44,7 @@ namespace XmlFormattersWebSite
                 xmlSerializerOutputFormatter.SupportedMediaTypes.Add(
                     new MediaTypeHeaderValue("text/xml-xmlser"));
 
-                var dcsInputFormatter = new XmlDataContractSerializerInputFormatter();
+                var dcsInputFormatter = new XmlDataContractSerializerInputFormatter(new MvcOptions());
                 dcsInputFormatter.SupportedMediaTypes.Clear();
                 dcsInputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/xml-dcs"));
                 dcsInputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/xml-dcs"));
@@ -66,16 +68,27 @@ namespace XmlFormattersWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseCultureReplacer();
-
-            app.UseErrorReporter();
-
-            // Add MVC to the request pipeline
             app.UseMvc(routes =>
             {
                 routes.MapRoute("ActionAsMethod", "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });
             });
         }
+
+        public static void Main(string[] args)
+        {
+            var host = CreateWebHostBuilder(args)
+                .Build();
+
+            host.Run();
+        }
+
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            new WebHostBuilder()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStartup<Startup>()
+                .UseKestrel()
+                .UseIISIntegration();
     }
 }
+

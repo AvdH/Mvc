@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Builder;
+using System.IO;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FilesWebSite
@@ -16,14 +18,25 @@ namespace FilesWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseCultureReplacer();
-
-            app.UseMiddleware<SendFileMiddleware>();
-
             app.UseMvc(routes =>
             {
                 routes.MapRoute(name: null, template: "{controller}/{action}", defaults: null);
             });
         }
+
+        public static void Main(string[] args)
+        {
+            var host = CreateWebHostBuilder(args)
+                .Build();
+
+            host.Run();
+        }
+
+        public static IWebHostBuilder CreateWebHostBuilder(string [] args) =>
+            new WebHostBuilder()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStartup<Startup>()
+                .UseKestrel()
+                .UseIISIntegration();
     }
 }

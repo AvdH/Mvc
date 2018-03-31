@@ -4,14 +4,14 @@
     ViewBag.Title = "Order Page";
 }
 
-@addTagHelper "Microsoft.AspNet.Mvc.TagHelpers.FormTagHelper, Microsoft.AspNet.Mvc.TagHelpers"
-@addTagHelper "Microsoft.AspNet.Mvc.TagHelpers.InputTagHelper, Microsoft.AspNet.Mvc.TagHelpers"
-@addTagHelper "Microsoft.AspNet.Mvc.TagHelpers.LabelTagHelper, Microsoft.AspNet.Mvc.TagHelpers"
-@addTagHelper "Microsoft.AspNet.Mvc.TagHelpers.OptionTagHelper, Microsoft.AspNet.Mvc.TagHelpers"
-@addTagHelper "Microsoft.AspNet.Mvc.TagHelpers.SelectTagHelper, Microsoft.AspNet.Mvc.TagHelpers"
-@addTagHelper "Microsoft.AspNet.Mvc.TagHelpers.ValidationMessageTagHelper, Microsoft.AspNet.Mvc.TagHelpers"
-@addTagHelper "Microsoft.AspNet.Mvc.TagHelpers.ValidationSummaryTagHelper, Microsoft.AspNet.Mvc.TagHelpers"
-@addTagHelper "Microsoft.AspNet.Mvc.TagHelpers.RenderAtEndOfFormTagHelper, Microsoft.AspNet.Mvc.TagHelpers"
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.FormTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.LabelTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.SelectTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.ValidationMessageTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.ValidationSummaryTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.RenderAtEndOfFormTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
 
 <html>
 <head>
@@ -32,6 +32,34 @@
             <label asp-for="Products" class="order"></label>
             @{ var @object = "multiple"; }
             <select asp-for="@Model.Products" asp-items="@((IEnumerable<SelectListItem>)ViewBag.Items)" multiple="@(@object)"></select>
+        </div>
+        <div>
+            @if (Model.ProductDetails.Count > 0)
+            {
+                <table>
+                    <tr>
+                        <th>
+                            <label asp-for="ProductDetails.FirstOrDefault().Number"></label>
+                        </th>
+                        <th>
+                            <label asp-for="ProductDetails.FirstOrDefault().ProductName"></label>
+                        </th>
+                    </tr>
+                    @for (var i = 0; i < Model.ProductDetails.Count; i++)
+                    {
+                    <tr>
+                        <td>
+                            <input asp-for="ProductDetails[i].Number" />
+                            <span asp-validation-for="ProductDetails[i].Number" class="text-danger" style=""></span>
+                        </td>
+                        <td>
+                            <input asp-for="ProductDetails[i].ProductName" />
+                            <span asp-validation-for="ProductDetails[i].ProductName" class="text-danger" style=""></span>
+                        </td>
+                    </tr>
+                    }
+                </table>
+            }
         </div>
         <div>
             <label asp-for="SubstituteProducts" class="order"></label>
@@ -84,7 +112,7 @@
             @Html.EditorFor(model => model.Customer.Gender)
             <span asp-validation-for="Customer.Gender"></span>
         </div>
-        <div asp-validation-summary="ValidationSummary.All" class="order"></div>
+        <div asp-validation-summary="All" class="order"></div>
         <input type="hidden" asp-for="Customer.Key" />
         <input type="submit" />
     </form>

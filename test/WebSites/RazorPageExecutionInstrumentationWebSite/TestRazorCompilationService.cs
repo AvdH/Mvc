@@ -3,41 +3,46 @@
 
 using System.IO;
 using System.Text;
-using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.AspNet.Mvc.Razor.Compilation;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Razor.Language;
 
 namespace RazorPageExecutionInstrumentationWebSite
 {
-    public class TestRazorCompilationService : RazorCompilationService
+    public class TestRazorProjectFileSystem : FileProviderRazorProjectFileSystem
     {
-        public TestRazorCompilationService(
-            ICompilationService compilationService,
-            IMvcRazorHost razorHost,
-            IOptions<RazorViewEngineOptions> viewEngineOptions)
-            : base(compilationService, razorHost, viewEngineOptions)
+        public TestRazorProjectFileSystem(IRazorViewEngineFileProviderAccessor fileProviderAccessor, IHostingEnvironment hostingEnvironment)
+            : base(fileProviderAccessor, hostingEnvironment)
         {
         }
 
-        protected override GeneratorResults GenerateCode(string relativePath, Stream inputStream)
+        public override RazorProjectItem GetItem(string path)
         {
-            // Normalize line endings to '\n' (LF). This removes core.autocrlf, core.eol, core.safecrlf, and
-            // .gitattributes from the equation and treats "\r\n", "\r", and "\n" as equivalent. Does not handle
-            // some obscure line endings (e.g. "\n\r") but otherwise ensures instrumentation locations are
-            // consistent.
-            string text;
-            using (var streamReader = new StreamReader(inputStream))
+            var item = (FileProviderRazorProjectItem)base.GetItem(path);
+            return new TestRazorProjectItem(item);
+        }
+
+        private class TestRazorProjectItem : FileProviderRazorProjectItem
+        {
+            public TestRazorProjectItem(FileProviderRazorProjectItem projectItem)
+                : base(projectItem.FileInfo, projectItem.BasePath, projectItem.FilePath, projectItem.RelativePhysicalPath)
             {
-                text = streamReader.ReadToEnd()
-                    .Replace("\r\n", "\n")  // Windows line endings
-                    .Replace("\r", "\n");   // Older Mac OS line endings
             }
 
-            var bytes = Encoding.UTF8.GetBytes(text);
-            inputStream = new MemoryStream(bytes);
+            public override Stream Read()
+            {
+                // Normalize line endings to '\r\n' (CRLF). This removes core.autocrlf, core.eol, core.safecrlf, and
+                // .gitattributes from the equation and treats "\r\n" and "\n" as equivalent. Does not handle
+                // some line endings like "\r" but otherwise ensures checksums and line mappings are consistent.
+                string text;
+                using (var streamReader = new StreamReader(base.Read()))
+                {
+                    text = streamReader.ReadToEnd().Replace("\r", "").Replace("\n", "\r\n");
+                }
 
-            return base.GenerateCode(relativePath, inputStream);
+                var bytes = Encoding.UTF8.GetBytes(text);
+                return new MemoryStream(bytes);
+            }
         }
     }
 }

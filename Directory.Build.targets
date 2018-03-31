@@ -1,0 +1,5 @@
+﻿<Project>
+  <PropertyGroup>
+    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">$(MicrosoftNETCoreApp21PackageVersion)</RuntimeFrameworkVersion>
+  </PropertyGroup>
+</Project>

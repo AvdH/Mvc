@@ -1,13 +1,12 @@
-﻿@using TagHelpersWebSite.Models
-@using Microsoft.AspNet.Mvc.Razor
+@using TagHelpersWebSite.Models
+@using Microsoft.AspNetCore.Mvc.Razor
 
 @model WebsiteContext
-
 @{
     ViewBag.Title = "Home Page";
 }
 
-@addTagHelper "*, TagHelpersWebSite"
+@addTagHelper *, TagHelpersWebSite
 
 @section css {
     <style condition="!Model.Approved">
@@ -35,12 +34,17 @@
     <h3>Current Tag Cloud from Tag Helper</h3>
     <tag-cloud count="Model.TagsToShow" surround="div" />
     <h3>Current Tag Cloud from ViewComponentHelper:</h3>
-    <section bold>@await Component.InvokeAsync("Tags", 15)</section>
+    <section bold>@await Component.InvokeAsync("Tags", new { count = 15 })</section>
     @{
         RenderTemplate(
             "Tag Cloud from Template: ",
             @<div condition="true"><h3>@item</h3><tag-cloud count="Model.TagsToShow"></tag-cloud></div>);
     }
+</div>
+
+<div>
+    <h3>Dictionary Valued Model Expression</h3>
+    <div prefix-test1="@Model.TagsToShow" prefix-test2="@Model.Version.Build"></div>
 </div>
 
 @section footerContent {

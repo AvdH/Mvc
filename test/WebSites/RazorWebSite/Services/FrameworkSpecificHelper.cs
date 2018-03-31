@@ -7,24 +7,13 @@ namespace RazorWebSite
     {
         public string ExecuteOperation()
         {
-#if DNX451
-            return "This method is running from DNX451";
-#elif DNXCORE50
-            return "This method is running from DNXCORE50";
-#endif
+            return "This method is running from NETCOREAPP2_0";
         }
 
-#if DNX451_CUSTOM_DEFINE
-        public string ExecuteDnx451Operation()
+#if NETCOREAPP2_0_CUSTOM_DEFINE || NETCOREAPP2_1_CUSTOM_DEFINE
+        public string ExecuteNetCoreApp2_0Operation()
         {
-            return "This method is only defined in DNX451";
-        }
-#endif
-
-#if DNXCORE50_CUSTOM_DEFINE
-        public string ExecuteDnxCore50Operation()
-        {
-            return "This method is only defined in DNXCORE50";
+            return "This method is only defined in NETCOREAPP2_0";
         }
 #endif
     }

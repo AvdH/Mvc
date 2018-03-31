@@ -3,11 +3,11 @@
 
 using System.Collections.Generic;
 using System.Web.Http;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 namespace WebApiCompatShimWebSite
 {
-    // This was ported from the WebAPI 5.2 codebase. Kept the same intentionally for compatability.
+    // This was ported from the WebAPI 5.2 codebase. Kept the same intentionally for compatibility.
     [ActionSelectionFilter]
     public class ParameterAttributeController : ApiController
     {

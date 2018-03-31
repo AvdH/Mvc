@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.ComponentModel;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BasicWebSite.Controllers
 {
@@ -18,6 +19,14 @@ namespace BasicWebSite.Controllers
         public string EchoValue_DefaultParameterValue(string input = "world")
         {
             return input;
+        }
+
+        [HttpGet]
+        public string EchoValue_DefaultParameterValue_ForStructs(
+            Guid guid = default(Guid),
+            TimeSpan timeSpan = default(TimeSpan))
+        {
+            return $"{guid}, {timeSpan}";
         }
     }
 }

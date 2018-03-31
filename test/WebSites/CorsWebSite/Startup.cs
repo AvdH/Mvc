@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Cors.Infrastructure;
+using System.IO;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CorsWebSite
@@ -47,14 +49,47 @@ namespace CorsWebSite
                                .WithMethods("PUT", "POST")
                                .WithExposedHeaders("exposed1", "exposed2");
                     });
+
+                options.AddPolicy(
+                    "AllowAll",
+                    builder =>
+                    {
+                        builder.AllowCredentials()
+                               .AllowAnyMethod()
+                               .AllowAnyHeader()
+                               .AllowAnyOrigin();
+                    });
+
+                options.AddPolicy(
+                    "Allow example.com",
+                    builder =>
+                    {
+                        builder.AllowCredentials()
+                               .AllowAnyMethod()
+                               .AllowAnyHeader()
+                               .WithOrigins("http://example.com");
+                    });
             });
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseCultureReplacer();
-
             app.UseMvc();
         }
+
+        public static void Main(string[] args)
+        {
+            var host = CreateWebHostBuilder(args)
+                .Build();
+
+            host.Run();
+        }
+
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            new WebHostBuilder()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStartup<Startup>()
+                .UseKestrel()
+                .UseIISIntegration();
     }
 }

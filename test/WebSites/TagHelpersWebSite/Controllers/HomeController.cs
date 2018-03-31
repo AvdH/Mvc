@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using TagHelpersWebSite.Models;
 
 namespace TagHelpersWebSite.Controllers
@@ -26,6 +26,11 @@ namespace TagHelpersWebSite.Controllers
         }
 
         public IActionResult Help()
+        {
+            return View();
+        }
+
+        public IActionResult ViewComponentTagHelpers()
         {
             return View();
         }
